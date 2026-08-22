@@ -18,8 +18,14 @@ COPY src ./src
 
 RUN npm run build
 
-# Reinstall production dependencies only, then regenerate the client, since
-# pruning devDependencies removes the generator.
+# Reinstall production dependencies only, then regenerate the client, because
+# pruning removes the generated output along with the dev tree.
+#
+# The prisma CLI is a production dependency rather than a dev one precisely so
+# it survives this prune: the container runs `prisma migrate deploy` on boot.
+# If it were pruned, npx would try to fetch the CLI at runtime as the
+# unprivileged `node` user, which is slow at best and fails without a writable
+# npm cache or outbound network.
 RUN npm ci --omit=dev && npx prisma generate
 
 # ---- Runtime stage ---------------------------------------------------------

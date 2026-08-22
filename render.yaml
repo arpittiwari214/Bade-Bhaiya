@@ -20,8 +20,14 @@ services:
   - type: web
     name: badebhaiya-api
     runtime: docker
+    # rootDir only scopes which file changes trigger a rebuild. It does NOT
+    # affect Docker path resolution, so both paths below are relative to the
+    # repo root and must be spelled out. Leaving dockerContext unset would
+    # default it to the repo root, where `COPY package*.json ./` would pick up
+    # the workspace manifest instead of the server's and the build would fail.
     rootDir: server
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
     plan: free
     healthCheckPath: /health
     # Migrations run on boot, so a fresh database converges before traffic
