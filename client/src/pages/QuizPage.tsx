@@ -77,6 +77,16 @@ export default function QuizPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       void queryClient.invalidateQueries({ queryKey: queryKeys.quizAttempts });
+
+      // This page already cached the attempt while it was IN_PROGRESS, when
+      // `result` was still null. Without invalidating that exact key the
+      // results page is served the stale copy and reports the quiz as
+      // unfinished. `quizAttempts` (the list) does not prefix-match
+      // `quizAttempt(id)`, so it has to be named explicitly.
+      if (attemptId) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.quizAttempt(attemptId) });
+      }
+
       navigate(`/quiz/result/${attemptId}`);
     },
     onError: (mutationError) => {

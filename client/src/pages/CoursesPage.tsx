@@ -46,7 +46,7 @@ export default function CoursesPage() {
         description="What each degree covers, who can apply, what it typically costs, and where it leads."
       />
 
-      <div className="mb-6 space-y-3 rounded-[--radius-card] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-6 space-y-3 rounded-[--radius-card] border border-slate-200 bg-surface p-4 dark:border-slate-800 dark:bg-slate-900">
         <SearchInput
           label="Search courses"
           value={filters.search}

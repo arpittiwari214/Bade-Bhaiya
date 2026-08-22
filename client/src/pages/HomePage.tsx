@@ -67,7 +67,7 @@ function StreamCards() {
         <Link
           key={stream.id}
           to={`/courses?stream=${stream.code}`}
-          className="group rounded-[--radius-card] border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+          className="group rounded-[--radius-card] border border-slate-200 bg-surface p-5 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
         >
           <span
             className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STREAM_STYLES[stream.code].badge}`}

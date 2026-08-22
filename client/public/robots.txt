@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Signed-in areas hold nothing useful to a crawler and should not be indexed.
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /profile
+Disallow: /roadmap
+Disallow: /saved
+Disallow: /notifications
+Disallow: /applications
+Disallow: /admin
+Disallow: /quiz/result/
+
+# Sitemap entries must be absolute URLs, so add this once the production
+# domain is known:
+#   Sitemap: https://your-domain.example/sitemap.xml

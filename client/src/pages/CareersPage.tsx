@@ -48,7 +48,7 @@ export default function CareersPage() {
         description="What each role involves, what qualification it needs, and the salary range to expect. Open one to see which courses lead into it."
       />
 
-      <div className="mb-6 grid gap-3 rounded-[--radius-card] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-2">
+      <div className="mb-6 grid gap-3 rounded-[--radius-card] border border-slate-200 bg-surface p-4 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-2">
         <SearchInput
           label="Search careers"
           value={filters.search}

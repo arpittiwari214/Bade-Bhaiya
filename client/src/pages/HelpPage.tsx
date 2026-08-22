@@ -67,7 +67,7 @@ function FaqSection() {
             {faqs.map((faq) => (
               <details
                 key={faq.id}
-                className="group rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+                className="group rounded-lg border border-slate-200 bg-surface dark:border-slate-800 dark:bg-slate-900"
               >
                 <summary className="cursor-pointer list-none p-4 font-medium text-slate-900 marker:hidden dark:text-slate-100">
                   <span className="flex items-center justify-between gap-3">

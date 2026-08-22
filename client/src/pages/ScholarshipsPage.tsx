@@ -103,7 +103,7 @@ export default function ScholarshipsPage() {
         description="Government and institutional scholarships, sorted by which deadline comes first. Applications are submitted on the official portal, which every listing links to."
       />
 
-      <div className="mb-6 space-y-3 rounded-[--radius-card] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-6 space-y-3 rounded-[--radius-card] border border-slate-200 bg-surface p-4 dark:border-slate-800 dark:bg-slate-900">
         <SearchInput
           label="Search scholarships"
           value={filters.search}

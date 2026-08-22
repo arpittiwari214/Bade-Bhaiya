@@ -56,7 +56,7 @@ function StepCard({
             ? 'border-emerald-500 bg-emerald-500 text-white'
             : step.status === 'IN_PROGRESS'
               ? 'border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
-              : 'border-slate-300 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900',
+              : 'border-slate-300 bg-surface text-slate-400 dark:border-slate-700 dark:bg-slate-900',
         )}
       >
         {done ? '✓' : step.displayOrder + 1}

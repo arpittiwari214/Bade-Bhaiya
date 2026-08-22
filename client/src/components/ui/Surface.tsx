@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 
 const CARD_BASE =
-  'rounded-[--radius-card] border border-slate-200 bg-white shadow-sm ' +
+  'rounded-[--radius-card] border border-slate-200 bg-surface shadow-sm ' +
   'dark:border-slate-800 dark:bg-slate-900';
 
 export function Card({

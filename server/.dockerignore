@@ -1,0 +1,31 @@
+# The server Dockerfile copies specific directories rather than the whole tree,
+# but this keeps the build context small and guarantees secrets stay out even
+# if a future COPY is broadened.
+.env
+.env.*
+!.env.example
+
+node_modules
+dist
+coverage
+
+.git
+.gitignore
+.github
+
+Dockerfile
+.dockerignore
+
+*.log
+npm-debug.log*
+
+tests
+vitest.config.ts
+
+*.db
+*.sqlite
+
+.vscode
+.idea
+.DS_Store
+Thumbs.db

@@ -8,23 +8,60 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand: deep blue reads as institutional and trustworthy, which suits a
-     product about government colleges; amber is the single accent. */
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-200: #bfdbfe;
-  --color-brand-300: #93c5fd;
-  --color-brand-400: #60a5fa;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-800: #1e40af;
-  --color-brand-900: #1e3a8a;
-  --color-brand-950: #172554;
+  /*
+   * Tuned for long reading sessions rather than maximum punch.
+   *
+   * Three deliberate choices:
+   *  - No pure white and no near-black. A #ffffff page against a lit room is
+   *    the main cause of glare, and #020617 makes light text vibrate. Both
+   *    ends are pulled inward.
+   *  - The neutral ramp is warm rather than blue-tinted. Cool greys read as
+   *    clinical and increase perceived harshness at the same luminance.
+   *  - The brand blue is desaturated. Fully saturated blue on a light
+   *    background is high chroma contrast, which tires the eye faster than
+   *    the luminance contrast that actually aids legibility.
+   *
+   * Measured against WCAG AA, every pairing clears its threshold: body text
+   * 15.0:1 light and 15.0:1 dark, secondary text 6.7:1 light and 5.4:1 dark,
+   * links 6.0:1 light and 7.4:1 dark, placeholders 3.2:1.
+   */
 
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
+  /* Card and control surfaces. Off-white, so it separates from the page
+     without the glare of #ffffff. */
+  --color-surface: #fcfcfa;
+
+  /* Warm neutral ramp, replacing Tailwind's blue-tinted slate. */
+  --color-slate-50: #f4f4f1;
+  --color-slate-100: #ebebe7;
+  --color-slate-200: #e3e3de;
+  --color-slate-300: #cdcdc7;
+  /* Serves as the light-mode placeholder and the dark-mode secondary text, so
+     it is tuned to clear 3:1 on a light card and 4.5:1 on a dark page. */
+  --color-slate-400: #8d8e87;
+  --color-slate-500: #6a6a63;
+  --color-slate-600: #565650;
+  --color-slate-700: #43433e;
+  --color-slate-800: #2b2e33;
+  --color-slate-900: #1d1f23;
+  --color-slate-950: #15171a;
+
+  /* Brand: still institutional blue, roughly a third less saturated. */
+  --color-brand-50: #eef3fa;
+  --color-brand-100: #dce7f5;
+  --color-brand-200: #c0d3ec;
+  --color-brand-300: #9bb8de;
+  --color-brand-400: #7aa9e8;
+  --color-brand-500: #5183ce;
+  --color-brand-600: #3d6bc4;
+  --color-brand-700: #345ba6;
+  --color-brand-800: #2c4d8a;
+  --color-brand-900: #26406f;
+  --color-brand-950: #16233a;
+
+  /* Amber, muted so it draws the eye without shouting. */
+  --color-accent-400: #e8b855;
+  --color-accent-500: #dfa32a;
+  --color-accent-600: #c2871a;
 
   /* Per-stream colours, used consistently across quiz results, roadmaps and
      course badges so a stream is recognisable at a glance. */

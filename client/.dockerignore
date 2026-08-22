@@ -1,0 +1,30 @@
+# The client Dockerfile uses `COPY . .`, so anything not excluded here ends up
+# inside the build image. Secrets and local state must never be copied in.
+.env
+.env.*
+!.env.example
+
+node_modules
+dist
+coverage
+.vite
+
+.git
+.gitignore
+.github
+
+Dockerfile
+.dockerignore
+
+*.log
+npm-debug.log*
+
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Tests and their fixtures are not needed to produce a production bundle.
+**/*.test.ts
+**/*.test.tsx
+src/test

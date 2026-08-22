@@ -4,7 +4,7 @@ import { Navbar } from './Navbar';
 
 function Footer() {
   return (
-    <footer className="mt-auto border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <footer className="mt-auto border-t border-slate-200 bg-surface dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>

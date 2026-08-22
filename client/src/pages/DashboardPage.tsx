@@ -22,7 +22,7 @@ function StatTile({ label, value, to }: { label: string; value: string | number;
   return (
     <Link
       to={to}
-      className="rounded-[--radius-card] border border-slate-200 bg-white p-4 transition-colors hover:border-brand-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-700"
+      className="rounded-[--radius-card] border border-slate-200 bg-surface p-4 transition-colors hover:border-brand-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-700"
     >
       <p className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-50">{value}</p>
       <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">{label}</p>

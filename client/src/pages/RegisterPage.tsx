@@ -85,7 +85,7 @@ export default function RegisterPage() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="mt-8 space-y-5 rounded-[--radius-card] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        className="mt-8 space-y-5 rounded-[--radius-card] border border-slate-200 bg-surface p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         {formError && <Alert tone="error">{formError}</Alert>}
 

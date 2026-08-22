@@ -133,7 +133,7 @@ function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
+          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-lg dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{user.name}</p>
@@ -195,7 +195,7 @@ export function Navbar() {
     );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-surface/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8" aria-label="Main">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <img src="/favicon.svg" alt="" className="size-8" aria-hidden="true" />
@@ -247,7 +247,7 @@ export function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div id="mobile-menu" className="border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
+        <div id="mobile-menu" className="border-t border-slate-200 bg-surface px-4 py-3 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
           <div className="flex flex-col gap-1">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} className={linkClass}>
