@@ -55,6 +55,25 @@ describe('CORS', () => {
 
     expect(response.headers['access-control-allow-origin']).toBeUndefined();
   });
+
+  // A disallowed origin is a client policy failure, not a server fault. It
+  // previously surfaced as a 500 "unexpected error" with a stack in the logs.
+  it('rejects a disallowed origin with 403, not 500', async () => {
+    const response = await request(app)
+      .post('/api/auth/login')
+      .set('Origin', 'https://evil.example')
+      .send({ email: 'a@b.com', password: 'irrelevant' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error.code).toBe('FORBIDDEN');
+  });
+
+  it('allows a request with no Origin header at all', async () => {
+    // Server-to-server calls and the dev proxy send no Origin.
+    const response = await request(app).get('/health');
+
+    expect(response.status).toBe(200);
+  });
 });
 
 describe('not found handling', () => {

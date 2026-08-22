@@ -306,7 +306,9 @@ export function CollegeManager() {
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     <Badge tone="brand">{COLLEGE_TYPE_LABELS[college.type] ?? college.type}</Badge>
-                    <Badge tone="neutral">{college._count.courses} courses</Badge>
+                    <Badge tone="neutral">
+          {college._count.courses} {college._count.courses === 1 ? 'course' : 'courses'}
+        </Badge>
                     {college.naacGrade && <Badge tone="success">NAAC {college.naacGrade}</Badge>}
                   </div>
                 </div>

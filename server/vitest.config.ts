@@ -12,7 +12,14 @@ export default defineConfig({
      */
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: 'postgresql://test:test@localhost:5432/badebhaiya_test?schema=public',
+      /**
+       * Defaults to the credentials the CI Postgres service uses. Set
+       * TEST_DATABASE_URL locally to point at a differently-provisioned
+       * database without editing this file.
+       */
+      DATABASE_URL:
+        process.env.TEST_DATABASE_URL ??
+        'postgresql://test:test@localhost:5432/badebhaiya_test?schema=public',
       JWT_ACCESS_SECRET: 'test-access-secret-value-that-is-long-enough-32',
       JWT_REFRESH_SECRET: 'test-refresh-secret-value-that-is-different-32',
       CORS_ORIGINS: 'http://localhost:5173',

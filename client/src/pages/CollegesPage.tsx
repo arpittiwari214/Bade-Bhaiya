@@ -48,7 +48,9 @@ function CollegeCard({ college }: { college: College }) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Badge tone="brand">{COLLEGE_TYPE_LABELS[college.type] ?? college.type}</Badge>
-        <Badge tone="neutral">{college._count.courses} courses</Badge>
+        <Badge tone="neutral">
+          {college._count.courses} {college._count.courses === 1 ? 'course' : 'courses'}
+        </Badge>
         {college.hostelAvailable && <Badge tone="neutral">Hostel</Badge>}
         {college.establishedYear && <Badge tone="neutral">Est. {college.establishedYear}</Badge>}
       </div>

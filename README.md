@@ -66,6 +66,12 @@ Either point `DATABASE_URL` at an existing PostgreSQL server, or start one:
 docker compose up -d db
 ```
 
+Without Docker, a native PostgreSQL 16 install works the same. Create the role and database once:
+
+```bash
+psql -U postgres -c "CREATE ROLE badebhaiya WITH LOGIN PASSWORD 'badebhaiya'; CREATE DATABASE badebhaiya OWNER badebhaiya;"
+```
+
 ### 2. Server
 
 ```bash
@@ -94,8 +100,13 @@ npm install
 npm run dev
 ```
 
-The app runs at http://localhost:5173 and proxies `/api` to the server, so there is no CORS
-preflight in development — the same arrangement nginx provides in production.
+The app runs at http://localhost:5173 and proxies `/api` to the server, mirroring what nginx does
+in production. The proxy strips the browser's `Origin` header so the hop is treated as
+server-to-server; without that the API would see a cross-origin request and reject it, because
+browsers send `Origin` on non-GET requests even when the page considers them same-origin.
+
+If port 5173 is taken, set `PORT` and the dev server moves. No CORS configuration needs to change,
+since requests still reach the API through the proxy.
 
 ### Demo accounts
 
@@ -184,8 +195,16 @@ cd server && npm test     # unit + integration
 cd client && npm test     # unit + component
 ```
 
-Server integration tests that need a database skip automatically when none is reachable, so the
-suite runs on a machine without PostgreSQL. CI always provides one, so they always run there.
+Server integration tests that need a database report as **skipped** when none is reachable, so the
+suite runs on a machine without PostgreSQL without ever looking like passing coverage it does not
+have. CI always provides one, so they always run there.
+
+The suite defaults to the credentials CI provisions. Against a differently-provisioned local
+database, point it there:
+
+```bash
+TEST_DATABASE_URL="postgresql://badebhaiya:badebhaiya@localhost:5432/badebhaiya_test?schema=public" npm test
+```
 
 ---
 

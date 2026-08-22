@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { corsOrigins, env, isProduction } from './config/env';
+import { ForbiddenError } from './lib/errors';
 import { apiLimiter } from './middleware/rateLimit';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { httpLogger, requestId } from './middleware/requestContext';
@@ -38,7 +39,10 @@ export function createApp(): Express {
           callback(null, true);
           return;
         }
-        callback(new Error(`Origin ${origin} is not allowed by CORS`));
+        // A disallowed origin is a client-side policy failure, not a server
+        // fault. Passing an AppError keeps it a 403 rather than surfacing as a
+        // 500 with a stack trace in the error logs.
+        callback(new ForbiddenError(`Origin ${origin} is not allowed by CORS`));
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

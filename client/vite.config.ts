@@ -13,13 +13,23 @@ export default defineConfig({
   },
 
   server: {
-    port: 5173,
+    // Honours PORT so the dev server can move when 5173 is taken. Requests
+    // still reach the API through the proxy below, so the browser sees a
+    // single origin and the port change needs no CORS change.
+    port: process.env.PORT ? Number(process.env.PORT) : 5173,
     // Proxying in development means the browser sees one origin, so the dev
     // setup matches the nginx production setup instead of relying on CORS.
     proxy: {
       '/api': {
         target: process.env.VITE_DEV_API_TARGET ?? 'http://localhost:4000',
         changeOrigin: true,
+        configure(proxy) {
+          // The browser treats these as same-origin but still sends an Origin
+          // header on non-GET requests. Forwarding it would make the API see a
+          // cross-origin call from whatever port Vite picked and reject it.
+          // Stripping it makes the hop server-to-server, which CORS allows.
+          proxy.on('proxyReq', (proxyReq) => proxyReq.removeHeader('origin'));
+        },
       },
     },
   },
