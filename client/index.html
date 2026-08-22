@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
+
+    <title>Bade Bhaiya — Find the right stream, course and college</title>
+    <meta
+      name="description"
+      content="Free guidance for Indian students after Class 10 and 12. Take an aptitude quiz, get a personalised roadmap, and find nearby government colleges and scholarships."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bade Bhaiya — Find the right stream, course and college" />
+    <meta
+      property="og:description"
+      content="Free guidance for Indian students after Class 10 and 12. Aptitude quiz, personalised roadmap, government college directory and scholarships."
+    />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      Applied before first paint so a dark-mode user never sees a white flash.
+      Reads the same key the theme store persists to.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bade-bhaiya-theme');
+          var theme = stored ? JSON.parse(stored).state.theme : 'system';
+          var dark =
+            theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          /* falls back to the light palette */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: system-ui, sans-serif">
+        Bade Bhaiya needs JavaScript enabled to run. Please enable it in your browser settings.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,608 @@
+// Bade Bhaiya - Digital Guidance Platform
+// Data model for the MVP described in docs/requirements.md
+//
+// Provider is PostgreSQL. Connection comes from DATABASE_URL (never hardcoded).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  STUDENT
+  PARENT
+  MENTOR
+  ADMIN
+}
+
+enum EducationLevel {
+  CLASS_9
+  CLASS_10
+  CLASS_11
+  CLASS_12
+  UNDERGRADUATE
+  POSTGRADUATE
+  OTHER
+}
+
+enum StreamCode {
+  SCIENCE
+  COMMERCE
+  ARTS
+  VOCATIONAL
+}
+
+enum DegreeType {
+  DIPLOMA
+  BACHELOR
+  MASTER
+  DOCTORATE
+  CERTIFICATE
+}
+
+enum CollegeType {
+  GOVERNMENT
+  GOVERNMENT_AIDED
+  AUTONOMOUS
+  PRIVATE
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum QuizCategory {
+  INTEREST
+  APTITUDE
+  PERSONALITY
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum RoadmapStage {
+  CURRENT
+  NEXT_EXAM
+  STREAM_CHOICE
+  DEGREE
+  HIGHER_STUDY
+  CAREER
+}
+
+enum StepStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  SKIPPED
+}
+
+enum TimelineEventType {
+  ADMISSION
+  ENTRANCE_EXAM
+  BOARD_EXAM
+  SCHOLARSHIP
+  COUNSELLING
+  RESULT
+}
+
+enum NotificationType {
+  DEADLINE_REMINDER
+  APPLICATION_UPDATE
+  RECOMMENDATION
+  SESSION_UPDATE
+  SYSTEM
+}
+
+enum MentorSessionStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum QueryStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum BookmarkEntity {
+  COLLEGE
+  SCHOLARSHIP
+  COURSE
+  CAREER
+}
+
+// ---------------------------------------------------------------------------
+// Identity and access
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  role          UserRole  @default(STUDENT)
+  name          String
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile                 Profile?
+  refreshTokens           RefreshToken[]
+  quizAttempts            QuizAttempt[]
+  roadmaps                Roadmap[]
+  scholarshipApplications ScholarshipApplication[]
+  timelineSubscriptions   TimelineSubscription[]
+  notifications           Notification[]
+  bookmarks               Bookmark[]
+  feedback                Feedback[]
+  sessionsAsStudent       MentorSession[]          @relation("StudentSessions")
+  sessionsAsMentor        MentorSession[]          @relation("MentorSessions")
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+/// Refresh tokens are stored hashed so a database leak cannot be replayed.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Profile {
+  id                  String          @id @default(cuid())
+  userId              String          @unique
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl           String?
+  bio                 String?
+  dateOfBirth         DateTime?
+  educationLevel      EducationLevel?
+  currentStream       StreamCode?
+  boardName           String?
+  schoolName          String?
+  city                String?
+  district            String?
+  state               String?
+  pincode             String?
+  latitude            Float?
+  longitude           Float?
+  interests           String[]        @default([])
+  preferredLanguage   String          @default("en")
+  onboardingCompleted Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([state, district])
+  @@index([educationLevel])
+}
+
+// ---------------------------------------------------------------------------
+// Academic catalogue: streams -> courses -> careers
+// ---------------------------------------------------------------------------
+
+model Stream {
+  id           String     @id @default(cuid())
+  code         StreamCode @unique
+  name         String
+  description  String
+  iconKey      String?
+  displayOrder Int        @default(0)
+
+  courses Course[]
+}
+
+model Course {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  name          String
+  shortName     String?
+  description   String
+  degreeType    DegreeType
+  durationYears Float
+  eligibility   String
+  averageFeeMin Int?
+  averageFeeMax Int?
+  streamId      String
+  stream        Stream     @relation(fields: [streamId], references: [id], onDelete: Restrict)
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  careers        CourseCareer[]
+  collegeCourses CollegeCourse[]
+
+  @@index([streamId])
+  @@index([degreeType])
+}
+
+model Career {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  title             String
+  description       String
+  educationRequired String
+  averageSalaryMin  Int?
+  averageSalaryMax  Int?
+  growthOutlook     String?
+  sectors           String[] @default([])
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  courses CourseCareer[]
+}
+
+/// Explicit join so the course -> career mapping can carry a relevance weight,
+/// which drives the ordering in the course-to-career flowchart.
+model CourseCareer {
+  courseId  String
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  careerId  String
+  career    Career  @relation(fields: [careerId], references: [id], onDelete: Cascade)
+  relevance Int     @default(50)
+  note      String?
+
+  @@id([courseId, careerId])
+  @@index([careerId])
+}
+
+// ---------------------------------------------------------------------------
+// Government college directory
+// ---------------------------------------------------------------------------
+
+model College {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  name            String
+  type            CollegeType @default(GOVERNMENT)
+  affiliation     String?
+  addressLine     String?
+  city            String
+  district        String
+  state           String
+  pincode         String?
+  latitude        Float?
+  longitude       Float?
+  website         String?
+  email           String?
+  phone           String?
+  establishedYear Int?
+  naacGrade       String?
+  hostelAvailable Boolean     @default(false)
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  courses CollegeCourse[]
+
+  @@index([state, district])
+  @@index([type])
+  @@index([name])
+}
+
+model CollegeCourse {
+  id               String  @id @default(cuid())
+  collegeId        String
+  college          College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  courseId         String
+  course           Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  seats            Int?
+  annualFee        Int?
+  cutoffPercentage Float?
+  medium           String?
+
+  @@unique([collegeId, courseId])
+  @@index([courseId])
+}
+
+// ---------------------------------------------------------------------------
+// Scholarships
+// ---------------------------------------------------------------------------
+
+model Scholarship {
+  id                   String           @id @default(cuid())
+  slug                 String           @unique
+  title                String
+  provider             String
+  description          String
+  criteria             String
+  benefitAmount        Int?
+  benefitDescription   String?
+  applicationStartDate DateTime?
+  deadline             DateTime
+  url                  String
+  state                String?
+  eligibleStreams      StreamCode[]     @default([])
+  eligibleLevels       EducationLevel[] @default([])
+  isActive             Boolean          @default(true)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  applications ScholarshipApplication[]
+
+  @@index([deadline])
+  @@index([state])
+  @@index([isActive])
+}
+
+model ScholarshipApplication {
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scholarshipId String
+  scholarship   Scholarship       @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
+  status        ApplicationStatus @default(SUBMITTED)
+  notes         String?
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  /// A user may only hold one application per scholarship. Enforced in the
+  /// database so concurrent submits cannot both pass an application-level check.
+  @@unique([userId, scholarshipId])
+  @@index([scholarshipId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Aptitude and interest quiz
+// ---------------------------------------------------------------------------
+
+model QuizQuestion {
+  id           String       @id @default(cuid())
+  category     QuizCategory
+  text         String
+  helpText     String?
+  displayOrder Int          @default(0)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  options QuizOption[]
+  answers QuizAnswer[]
+
+  @@index([category, displayOrder])
+}
+
+model QuizOption {
+  id           String       @id @default(cuid())
+  questionId   String
+  question     QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text         String
+  displayOrder Int          @default(0)
+  /// Points this option contributes per stream, e.g. {"SCIENCE":3,"ARTS":1}.
+  streamWeights Json        @default("{}")
+
+  answers QuizAnswer[]
+
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status            AttemptStatus @default(IN_PROGRESS)
+  /// Final per-stream totals, e.g. {"SCIENCE":18,"COMMERCE":9}.
+  scores            Json          @default("{}")
+  recommendedStream StreamCode?
+  startedAt         DateTime      @default(now())
+  completedAt       DateTime?
+
+  answers  QuizAnswer[]
+  roadmaps Roadmap[]
+
+  @@index([userId, status])
+}
+
+model QuizAnswer {
+  id         String       @id @default(cuid())
+  attemptId  String
+  attempt    QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId   String
+  option     QuizOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  answeredAt DateTime     @default(now())
+
+  /// One answer per question per attempt; re-answering updates in place.
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+}
+
+// ---------------------------------------------------------------------------
+// Personalised roadmap (the product's stated USP)
+// ---------------------------------------------------------------------------
+
+model Roadmap {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attemptId String?
+  attempt   QuizAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  title     String
+  summary   String?
+  stream    StreamCode?
+  isCurrent Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  steps RoadmapStep[]
+
+  @@index([userId, isCurrent])
+}
+
+model RoadmapStep {
+  id           String       @id @default(cuid())
+  roadmapId    String
+  roadmap      Roadmap      @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  stage        RoadmapStage
+  displayOrder Int          @default(0)
+  title        String
+  description  String
+  status       StepStatus   @default(PENDING)
+  targetDate   DateTime?
+  resourceUrl  String?
+
+  @@index([roadmapId, displayOrder])
+}
+
+// ---------------------------------------------------------------------------
+// Timeline tracker
+// ---------------------------------------------------------------------------
+
+model TimelineEvent {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  description String
+  type        TimelineEventType
+  startDate   DateTime
+  endDate     DateTime?
+  url         String?
+  state       String?
+  isNational  Boolean           @default(false)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  subscriptions TimelineSubscription[]
+
+  @@index([startDate])
+  @@index([type])
+  @@index([state])
+}
+
+model TimelineSubscription {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId    String
+  event      TimelineEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  remindAt   DateTime?
+  notifiedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@unique([userId, eventId])
+  @@index([remindAt, notifiedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Engagement: bookmarks, notifications, feedback, help
+// ---------------------------------------------------------------------------
+
+model Bookmark {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType BookmarkEntity
+  entityId   String
+  createdAt  DateTime       @default(now())
+
+  @@unique([userId, entityType, entityId])
+  @@index([userId, entityType])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  actionUrl String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  rating    Int
+  category  String?
+  message   String
+  pageUrl   String?
+  createdAt DateTime @default(now())
+
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model ContactQuery {
+  id        String      @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    QueryStatus @default(OPEN)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model Faq {
+  id           String   @id @default(cuid())
+  question     String
+  answer       String
+  category     String   @default("general")
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category, displayOrder])
+}
+
+model MentorSession {
+  id              String              @id @default(cuid())
+  mentorId        String
+  mentor          User                @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         User                @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  scheduledAt     DateTime
+  durationMinutes Int                 @default(30)
+  status          MentorSessionStatus @default(REQUESTED)
+  topic           String?
+  meetingUrl      String?
+  notes           String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([mentorId, scheduledAt])
+  @@index([studentId, scheduledAt])
+}

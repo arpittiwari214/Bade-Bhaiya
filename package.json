@@ -1,0 +1,35 @@
+{
+  "name": "bade-bhaiya",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digital guidance platform helping Indian students choose the right stream, course, college and career.",
+  "license": "MIT",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:server dev:client",
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
+    "build": "npm run build --workspace server && npm run build --workspace client",
+    "start": "npm run start --workspace server",
+    "test": "npm run test --workspace server",
+    "lint": "npm run lint --workspace server && npm run lint --workspace client",
+    "typecheck": "npm run typecheck --workspace server && npm run typecheck --workspace client",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "db:migrate": "npm run db:migrate --workspace server",
+    "db:seed": "npm run db:seed --workspace server",
+    "db:studio": "npm run db:studio --workspace server",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.6.2"
+  }
+}
