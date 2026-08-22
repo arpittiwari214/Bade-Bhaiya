@@ -139,6 +139,52 @@ function PasswordSection() {
   );
 }
 
+/**
+ * Revokes every refresh token for the account. The recovery step if a device
+ * is lost or a session is suspected stolen, without needing a password change.
+ */
+function SessionsSection() {
+  const logout = useAuthStore((state) => state.logout);
+  const [error, setError] = useState<string | null>(null);
+
+  const signOutEverywhere = useMutation({
+    mutationFn: () => apiPost('/auth/logout-all'),
+    onSuccess: () => void logout(),
+    onError: (mutationError) =>
+      setError(
+        mutationError instanceof ApiError
+          ? mutationError.message
+          : 'Could not sign out other devices.',
+      ),
+  });
+
+  return (
+    <Card>
+      <CardHeader
+        title="Signed-in devices"
+        description="Ends every session, including this one."
+      />
+
+      <div className="space-y-4 p-4 sm:p-5">
+        {error && <Alert tone="error">{error}</Alert>}
+
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          If you signed in on a shared or lost device, sign out everywhere and then sign back in
+          here.
+        </p>
+
+        <Button
+          variant="secondary"
+          loading={signOutEverywhere.isPending}
+          onClick={() => signOutEverywhere.mutate()}
+        >
+          Sign out of all devices
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 export default function ProfilePage() {
   const setUser = useAuthStore((state) => state.setUser);
   const [saved, setSaved] = useState(false);
@@ -279,6 +325,7 @@ export default function ProfilePage() {
       </Card>
 
       <PasswordSection />
+      <SessionsSection />
     </div>
   );
 }

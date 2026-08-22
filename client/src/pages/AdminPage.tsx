@@ -10,6 +10,10 @@ import { Select } from '@/components/ui/Field';
 import { Badge, Card, CardHeader, PageHeader } from '@/components/ui/Surface';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/Feedback';
 import { Pagination } from '@/components/ui/Pagination';
+import { ScholarshipManager } from '@/components/admin/ScholarshipManager';
+import { CollegeManager } from '@/components/admin/CollegeManager';
+import { TimelineManager } from '@/components/admin/TimelineManager';
+import { FeedbackList } from '@/components/admin/FeedbackList';
 
 interface AdminUser {
   id: string;
@@ -34,8 +38,12 @@ interface ContactQuery {
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
+  { value: 'scholarships', label: 'Scholarships' },
+  { value: 'colleges', label: 'Colleges' },
+  { value: 'timeline', label: 'Important dates' },
   { value: 'users', label: 'Users' },
   { value: 'queries', label: 'Support queue' },
+  { value: 'feedback', label: 'Feedback' },
 ] as const;
 
 type Tab = (typeof TABS)[number]['value'];
@@ -351,8 +359,12 @@ export default function AdminPage() {
       </div>
 
       {tab === 'overview' && <Overview />}
+      {tab === 'scholarships' && <ScholarshipManager />}
+      {tab === 'colleges' && <CollegeManager />}
+      {tab === 'timeline' && <TimelineManager />}
       {tab === 'users' && <Users />}
       {tab === 'queries' && <SupportQueue />}
+      {tab === 'feedback' && <FeedbackList />}
     </div>
   );
 }

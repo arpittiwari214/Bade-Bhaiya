@@ -10,6 +10,7 @@ import type { Faq } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Field';
 import { Card, CardHeader, PageHeader } from '@/components/ui/Surface';
+import { FeedbackForm, FeedbackSummaryBar } from '@/components/FeedbackForm';
 import { Alert, ErrorState, Skeleton } from '@/components/ui/Feedback';
 
 const contactSchema = z.object({
@@ -187,6 +188,17 @@ export default function HelpPage() {
 
       <div className="space-y-8">
         <FaqSection />
+
+        <Card id="feedback">
+          <CardHeader
+            title="Share your feedback"
+            description="Tell us what helped and what did not."
+            action={<FeedbackSummaryBar />}
+          />
+          <div className="p-4 sm:p-5">
+            <FeedbackForm />
+          </div>
+        </Card>
 
         <Card id="contact">
           <CardHeader
