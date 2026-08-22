@@ -36,6 +36,26 @@ router.get(
   }),
 );
 
+/**
+ * Public catalogue counts for the landing page. One small cached query beats
+ * the three paginated list calls the page would otherwise make just to read
+ * `meta.total`, which matters on the low-bandwidth connections this product
+ * targets.
+ */
+router.get(
+  '/api/stats',
+  asyncHandler(async (_req, res) => {
+    const [colleges, courses, scholarships] = await Promise.all([
+      prisma.college.count({ where: { isActive: true } }),
+      prisma.course.count({ where: { isActive: true } }),
+      prisma.scholarship.count({ where: { isActive: true, deadline: { gte: new Date() } } }),
+    ]);
+
+    res.set('Cache-Control', 'public, max-age=300');
+    res.status(200).json({ data: { colleges, courses, scholarships } });
+  }),
+);
+
 router.use('/api/auth', authRoutes);
 router.use('/api/profile', profileRoutes);
 router.use('/api/catalog', catalogRoutes);

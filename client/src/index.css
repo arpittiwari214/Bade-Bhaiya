@@ -41,9 +41,20 @@
   --color-slate-500: #6a6a63;
   --color-slate-600: #565650;
   --color-slate-700: #43433e;
-  --color-slate-800: #2b2e33;
-  --color-slate-900: #1d1f23;
-  --color-slate-950: #15171a;
+
+  /*
+   * Dark-mode layering. The first attempt put page and card only 1.09:1
+   * apart, which is below the threshold where an edge reads as an edge, so
+   * cards dissolved into the background and the page looked unstyled.
+   *
+   * These three now step apart deliberately: the page is the floor, cards sit
+   * clearly above it, and the border is light enough to draw the card outline
+   * on its own. Dark surfaces get no help from shadow, so the border is doing
+   * the work that elevation would do in light mode.
+   */
+  --color-slate-800: #343941; /* card borders in dark */
+  --color-slate-900: #1c2027; /* cards */
+  --color-slate-950: #101317; /* page */
 
   /* Brand: still institutional blue, roughly a third less saturated. */
   --color-brand-50: #eef3fa;

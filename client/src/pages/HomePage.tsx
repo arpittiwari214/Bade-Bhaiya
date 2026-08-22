@@ -86,39 +86,92 @@ function StreamCards() {
   );
 }
 
+interface CatalogStats {
+  colleges: number;
+  courses: number;
+  scholarships: number;
+}
+
 export default function HomePage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const { data: stats } = useQuery({
+    queryKey: ['stats'],
+    queryFn: () => apiGet<CatalogStats>('/stats'),
+    staleTime: 10 * 60 * 1000,
+  });
 
   return (
     <div className="space-y-16 pb-8 sm:space-y-24">
       {/* Hero */}
-      <section className="pt-4 text-center sm:pt-10">
-        <p className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-800 dark:bg-brand-950 dark:text-brand-200">
-          Free guidance for Class 10 and 12 students
-        </p>
+      <section className="relative -mx-4 overflow-hidden px-4 pb-4 pt-10 text-center sm:-mx-6 sm:px-6 sm:pt-14 lg:-mx-8 lg:px-8">
+        {/*
+         * A soft brand wash behind the headline. Without it the hero is a flat
+         * expanse of background colour, which reads as an unstyled page rather
+         * than a deliberate one. Rendered as a sibling behind relative content
+         * so it needs no negative z-index.
+         */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[460px] bg-[radial-gradient(58%_100%_at_50%_0%,var(--color-brand-100),transparent_72%)] dark:bg-[radial-gradient(58%_100%_at_50%_0%,rgba(81,131,206,0.20),transparent_72%)]"
+        />
 
-        <h1 className="mx-auto mt-5 max-w-3xl text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">
-          Pick your stream with a reason, not a guess
-        </h1>
+        <div className="relative">
+          <p className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-sm font-medium text-brand-800 dark:border-brand-800/60 dark:bg-brand-950 dark:text-brand-200">
+            <span className="size-1.5 rounded-full bg-accent-500" aria-hidden="true" />
+            Free guidance for Class 10 and 12 students
+          </p>
 
-        <p className="mx-auto mt-5 max-w-2xl text-base text-slate-600 dark:text-slate-400 sm:text-lg">
-          Most students choose a stream because of what a relative said or what a friend picked.
-          Bade Bhaiya shows you which stream fits your interests, what each degree actually leads
-          to, and which government colleges near you offer it.
-        </p>
+          <h1 className="mx-auto mt-6 max-w-3xl text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">
+            Pick your stream with{' '}
+            <span className="bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">
+              a reason
+            </span>
+            , not a guess
+          </h1>
 
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink to={isAuthenticated ? '/dashboard' : '/quiz'} size="lg">
-            {isAuthenticated ? 'Go to dashboard' : 'Take the free quiz'}
-          </ButtonLink>
-          <ButtonLink to="/colleges" variant="secondary" size="lg">
-            Browse government colleges
-          </ButtonLink>
+          <p className="mx-auto mt-5 max-w-2xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            Most students choose a stream because of what a relative said or what a friend picked.
+            Bade Bhaiya shows you which stream fits your interests, what each degree actually leads
+            to, and which government colleges near you offer it.
+          </p>
+
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <ButtonLink to={isAuthenticated ? '/dashboard' : '/quiz'} size="lg">
+              {isAuthenticated ? 'Go to dashboard' : 'Take the free quiz'}
+            </ButtonLink>
+            <ButtonLink to="/colleges" variant="secondary" size="lg">
+              Browse government colleges
+            </ButtonLink>
+          </div>
+
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+            No payment. No spam. Your results stay private to you.
+          </p>
+
+          {/* Grounds the claims in the actual catalogue rather than leaving the
+              hero to trail off into empty space. Hidden until the counts load
+              so the layout does not jump or show placeholder zeros. */}
+          {stats && (
+            <dl className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-4 border-t border-slate-200 pt-8 dark:border-slate-800">
+              {[
+                { value: stats.colleges, label: 'Government colleges' },
+                { value: stats.courses, label: 'Courses mapped' },
+                { value: stats.scholarships, label: 'Scholarships open' },
+              ].map((item) => (
+                <div key={item.label}>
+                  <dt className="sr-only">{item.label}</dt>
+                  <dd className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-50 sm:text-3xl">
+                    {item.value}
+                  </dd>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
+                    {item.label}
+                  </p>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
-
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-500">
-          No payment. No spam. Your results stay private to you.
-        </p>
       </section>
 
       {/* How it works */}
