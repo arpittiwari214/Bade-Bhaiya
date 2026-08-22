@@ -210,6 +210,13 @@ TEST_DATABASE_URL="postgresql://badebhaiya:badebhaiya@localhost:5432/badebhaiya_
 
 ## Deployment
 
+**See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for step-by-step instructions.** A
+[`render.yaml`](render.yaml) Blueprint provisions the database, API and client together;
+Railway and plain Docker on a VPS are also covered.
+
+Two post-deploy steps are required or the app will not work: creating an admin account
+(`npm run create-admin`) and seeding the reference data (`npm run db:seed`).
+
 The GitHub Actions workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml) lints,
 typechecks, tests and builds both packages against a real PostgreSQL service, verifies that
 `schema.prisma` matches the committed migrations, and builds both Docker images.

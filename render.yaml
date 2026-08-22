@@ -1,0 +1,93 @@
+# Render Blueprint. From the Render dashboard: New > Blueprint, point it at
+# this repository, and it provisions the database, API and web client together.
+#
+# After the first deploy you must do two things by hand, both noted below:
+#   1. Set CORS_ORIGINS on the API to the client's real URL.
+#   2. Create an admin account (see docs/DEPLOYMENT.md).
+
+databases:
+  - name: badebhaiya-db
+    databaseName: badebhaiya
+    user: badebhaiya
+    # Free Postgres on Render is time-limited. Move to a paid plan before a
+    # real pilot, or the database is deleted and takes the data with it.
+    plan: free
+
+services:
+  # ---------------------------------------------------------------------------
+  # API
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: badebhaiya-api
+    runtime: docker
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    # Migrations run on boot, so a fresh database converges before traffic
+    # arrives. `migrate deploy` only applies committed migrations and never
+    # generates or resets, which is what makes it safe to run every start.
+    dockerCommand: sh -c "npx prisma migrate deploy && node dist/server.js"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: badebhaiya-db
+          property: connectionString
+      # Generated once by Render and then held constant. Rotating either of
+      # these signs every user out.
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      # Render terminates TLS one hop in front of the container. This must be
+      # the exact hop count: `true` would let a client spoof X-Forwarded-For
+      # and slip past the rate limiter.
+      - key: TRUST_PROXY
+        value: 1
+      - key: LOG_LEVEL
+        value: info
+      # Placeholder. Replace with the deployed client URL after the first
+      # deploy, e.g. https://badebhaiya-web.onrender.com
+      - key: CORS_ORIGINS
+        sync: false
+
+  # ---------------------------------------------------------------------------
+  # Web client
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: badebhaiya-web
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # Vite inlines this at build time, so changing it needs a rebuild, not
+      # just a restart. Must match the API service URL exactly.
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      # Client-side routing: any unknown path returns the app shell so a deep
+      # link such as /colleges/some-college does not 404 on refresh.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
