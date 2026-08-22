@@ -1,0 +1,35 @@
+# Normalise line endings so a Windows checkout does not produce CRLF in files
+# that are consumed on Linux. A CRLF shebang line breaks a script inside the
+# Docker build, and mixed endings turn every diff into noise.
+
+* text=auto eol=lf
+
+# Files that must be LF regardless of platform.
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.cjs   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.prisma text eol=lf
+*.sql   text eol=lf
+*.sh    text eol=lf
+Dockerfile text eol=lf
+*.conf  text eol=lf
+.env.example text eol=lf
+
+# Binary: never touched.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.pdf   binary
+*.db    binary
