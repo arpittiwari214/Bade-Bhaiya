@@ -23,10 +23,25 @@ import { describeDatabase } from '../src/lib/describeDatabase';
 
 const prisma = new PrismaClient();
 
+/**
+ * Reads --flag and everything up to the next --flag, joined with spaces.
+ *
+ * npm strips the quotes from `-- --name "Your Name"` before the script sees
+ * argv, so a quoted name arrives as separate tokens. Taking only argv[i + 1]
+ * silently truncated it to the first word.
+ */
 function arg(flag: string): string | undefined {
   const index = process.argv.indexOf(`--${flag}`);
   if (index === -1) return undefined;
-  return process.argv[index + 1];
+
+  const parts: string[] = [];
+  for (let i = index + 1; i < process.argv.length; i += 1) {
+    const token = process.argv[i];
+    if (token === undefined || token.startsWith('--')) break;
+    parts.push(token);
+  }
+
+  return parts.length > 0 ? parts.join(' ') : undefined;
 }
 
 function fail(message: string): never {
