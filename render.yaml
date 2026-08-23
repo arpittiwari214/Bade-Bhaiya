@@ -20,12 +20,16 @@ services:
   - type: web
     name: badebhaiya-api
     runtime: docker
-    # rootDir only scopes which file changes trigger a rebuild. It does NOT
-    # affect Docker path resolution, so both paths below are relative to the
-    # repo root and must be spelled out. Leaving dockerContext unset would
-    # default it to the repo root, where `COPY package*.json ./` would pick up
-    # the workspace manifest instead of the server's and the build would fail.
-    rootDir: server
+    # Both paths are relative to the repo root, and `rootDir` is deliberately
+    # NOT set here.
+    #
+    # Setting it makes Render resolve these paths relative to rootDir instead,
+    # which silently doubles the segment: rootDir `server` plus dockerContext
+    # `./server` resolved to `src/server/server` and the build failed at
+    # checkout with "no such file or directory".
+    #
+    # The cost of omitting rootDir is that a client-only commit also rebuilds
+    # the API. That is worth it for a path that cannot be misread.
     dockerfilePath: ./server/Dockerfile
     dockerContext: ./server
     plan: free
