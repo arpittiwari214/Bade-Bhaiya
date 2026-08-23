@@ -9,10 +9,15 @@ build/
 *.tsbuildinfo
 
 # Environment
+#
+# `.env` alone matches only a file named exactly that, so a sibling like
+# render-db.env or prod.env would be committed. Anything ending in .env is
+# ignored instead, since these files exist to hold secrets.
+*.env
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+!*.env.example
 
 # Databases (never commit real data)
 *.db
