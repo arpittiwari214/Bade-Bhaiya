@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { describeDatabase } from '../src/lib/describeDatabase';
 import {
   careers,
   colleges,
@@ -265,7 +267,12 @@ async function seedUsers() {
 }
 
 async function main() {
-  console.log('Seeding database...');
+  const target = describeDatabase();
+  console.log(`Seeding ${target.label}`);
+  if (target.isLocal) {
+    console.log('  (this is your LOCAL database, not a deployed one)');
+  }
+  console.log('');
 
   console.log('- streams');
   const streamRecords = await seedStreams();

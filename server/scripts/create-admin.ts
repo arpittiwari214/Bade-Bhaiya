@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { describeDatabase } from '../src/lib/describeDatabase';
 
 /**
  * Creates or promotes an administrator.
@@ -34,6 +35,13 @@ function fail(message: string): never {
 }
 
 async function main(): Promise<void> {
+  const target = describeDatabase();
+  console.log('');
+  console.log(`  Database: ${target.label}`);
+  if (target.isLocal) {
+    console.log('  (this is your LOCAL database, not a deployed one)');
+  }
+
   const email = arg('email')?.trim().toLowerCase();
   const name = arg('name')?.trim() ?? 'Administrator';
   const password = process.env.ADMIN_PASSWORD;
