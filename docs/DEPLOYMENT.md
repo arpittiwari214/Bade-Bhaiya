@@ -74,9 +74,15 @@ curl https://badebhaiya-api.onrender.com/health/ready
 The first should return `{"status":"ok",...}`, the second `{"status":"ready","database":"up"}`.
 If readiness fails, the API cannot reach Postgres — check `DATABASE_URL`.
 
-> **Free tier caveat:** free Render services sleep after inactivity, so the first request
-> after an idle period takes 30–60 seconds. Free Postgres is also time-limited and is
-> **deleted** when it expires. Move to a paid plan before any real pilot.
+> **Free tier caveats**, all three worth knowing before you rely on this:
+>
+> - Free services **sleep after ~15 minutes of inactivity**. The next request takes
+>   30–60 seconds to wake them. That is normal, not a fault.
+> - Free Postgres **expires 30 days after creation**, with a 14-day grace period to
+>   upgrade before the database *and its data* are deleted. Move to a paid plan before
+>   any real pilot, and take a `pg_dump` regardless.
+> - There is **no Shell or SSH** on free instances, which is why the post-deploy steps
+>   below run from your own machine against the external database URL.
 
 ---
 
@@ -168,23 +174,24 @@ bypass the limiter entirely. One load balancer means `1`.
 
 ## Post-deploy checklist
 
-### 1. Create an admin account — required
+> **On Render's free tier there is no Shell.** Dashboard shell and SSH are paid-plan
+> features. Both steps below must therefore be run **from your own machine**, pointed at
+> the database's *External* connection string. This works because a Render Postgres
+> instance accepts external connections by default (the allowlist defaults to
+> `0.0.0.0/0`, so credentials are the only gate).
+>
+> Copy **External Database URL** from the database page in the Render dashboard, then
+> from the repo:
+>
+> ```bash
+> cd server
+> export DATABASE_URL='postgresql://...the external URL...'
+> ```
+>
+> Every command below then runs against the deployed database. On a paid plan you can
+> instead open **Shell** on the API service and skip the export.
 
-The seed deliberately does **not** create demo accounts in production, so on a fresh
-deployment no admin exists and the admin panel is unreachable. Create one:
-
-```bash
-ADMIN_PASSWORD='choose-a-strong-one' npm run create-admin -- --email you@example.com --name "Your Name"
-```
-
-Run it wherever the API can reach the database — a Render Shell, `railway run`, or
-`docker compose exec server` on a VPS. The password comes from the environment rather
-than a flag so it does not land in shell history.
-
-Run it against an **existing** account and it promotes that account to `ADMIN` and leaves
-the password alone, so you cannot lock yourself out.
-
-### 2. Load the reference data — required
+### 1. Load the reference data — required
 
 Without it there are no courses, colleges, scholarships or quiz questions, and the app is
 an empty shell.
@@ -195,6 +202,19 @@ npm run db:seed
 
 Safe to run repeatedly — every write is an upsert keyed on a natural unique field, so it
 converges instead of duplicating.
+
+### 2. Create an admin account — required
+
+The seed deliberately does **not** create demo accounts in production, so on a fresh
+deployment no admin exists and the admin panel is unreachable. Create one:
+
+```bash
+ADMIN_PASSWORD='choose-a-strong-one' npm run create-admin -- --email you@example.com --name "Your Name"
+```
+
+The password comes from the environment rather than a flag so it does not land in shell
+history. Run it against an **existing** account and it promotes that account to `ADMIN`
+and leaves the password alone, so you cannot lock yourself out.
 
 ### 3. Replace the seeded content — before real users
 
