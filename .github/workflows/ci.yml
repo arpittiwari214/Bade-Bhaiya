@@ -1,8 +1,13 @@
 name: CI
 
 on:
+  # Every branch, not just main. The Docker job is the only check that
+  # validates each package's standalone lockfile, because `npm ci` run inside
+  # the repo resolves against the workspace root lockfile and passes even when
+  # server/package-lock.json is stale. Restricting CI to main meant a broken
+  # image could be pushed and only fail on the deployment host.
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
     branches: [main]
 
