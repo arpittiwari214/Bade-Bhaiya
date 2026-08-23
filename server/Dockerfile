@@ -1,7 +1,19 @@
 # syntax=docker/dockerfile:1
 
+# Debian slim rather than Alpine. Prisma's query engine is a native binary that
+# links against OpenSSL, and on musl it needs the linux-musl-openssl engine plus
+# libc6-compat, which Alpine does not provide by default. Detection failures
+# there surface as "Unable to require libquery_engine-...so.node" at boot, long
+# after the image builds cleanly. Debian is Prisma's documented happy path and
+# costs about 40 MB.
+
 # ---- Build stage -----------------------------------------------------------
-FROM node:22-alpine AS build
+FROM node:22-slim AS build
+
+# openssl is required for `prisma generate` to resolve the right engine target.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -29,11 +41,14 @@ RUN npm run build
 RUN npm ci --omit=dev && npx prisma generate
 
 # ---- Runtime stage ---------------------------------------------------------
-FROM node:22-alpine AS runtime
+FROM node:22-slim AS runtime
 
-# dumb-init reaps zombies and forwards SIGTERM, which the graceful shutdown
+# openssl: the Prisma engine loads it at runtime, not just at generate time.
+# dumb-init: reaps zombies and forwards SIGTERM, which the graceful shutdown
 # handler depends on.
-RUN apk add --no-cache dumb-init
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates dumb-init \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 WORKDIR /app
