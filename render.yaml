@@ -34,10 +34,12 @@ services:
     dockerContext: ./server
     plan: free
     healthCheckPath: /health
-    # Migrations run on boot, so a fresh database converges before traffic
-    # arrives. `migrate deploy` only applies committed migrations and never
-    # generates or resets, which is what makes it safe to run every start.
-    dockerCommand: sh -c "npx prisma migrate deploy && node dist/server.js"
+    # No dockerCommand. The image's own CMD runs docker-entrypoint.sh, which
+    # migrates and then starts the API.
+    #
+    # A dockerCommand here previously carried the whole `sh -c "... && ..."`
+    # string. Combined with the image's ENTRYPOINT, sh received it as a single
+    # command name and the container died with exit 127 before the app ran.
     envVars:
       - key: NODE_ENV
         value: production

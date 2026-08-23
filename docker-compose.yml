@@ -36,8 +36,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # One hop: nginx sits in front of this service.
       TRUST_PROXY: 1
-    # Migrations run on start so a fresh volume comes up with a valid schema.
-    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+    # No command override: the image's CMD already runs docker-entrypoint.sh,
+    # which migrates before starting so a fresh volume comes up with a valid
+    # schema. Keeping the sequence in one place stops compose and Render from
+    # drifting apart.
     ports:
       - '4000:4000'
 
