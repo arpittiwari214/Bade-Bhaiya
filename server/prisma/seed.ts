@@ -225,12 +225,23 @@ async function seedFaqs() {
 }
 
 /**
- * Demo accounts exist only outside production. Seeding a known password into a
- * live database would be a standing backdoor.
+ * Demo accounts have a known password so local development has something to
+ * sign in with. In a reachable database they are a standing backdoor, and one
+ * of them is an ADMIN.
+ *
+ * The gate is the target database, not NODE_ENV. Keying on NODE_ENV was wrong:
+ * the documented way to populate a deployed database is to run this from a
+ * developer machine with DATABASE_URL pointed at it, where NODE_ENV is
+ * 'development'. The guard therefore could not fire in the one situation it
+ * was written for, and seeded a public admin password into production.
+ *
+ * Writing anywhere other than localhost now skips them, whatever NODE_ENV says.
  */
 async function seedUsers() {
-  if (process.env.NODE_ENV === 'production' && process.env.SEED_DEMO_USERS !== 'true') {
-    console.log('  Skipping demo users (production)');
+  const target = describeDatabase();
+
+  if (!target.isLocal && process.env.SEED_DEMO_USERS !== 'true') {
+    console.log(`  Skipping demo users (${target.label} is not a local database)`);
     return;
   }
 
